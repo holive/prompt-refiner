@@ -1,6 +1,8 @@
 ---
 name: prompt-refiner
 description: Iterative prompt and skill revision using research-backed critique patterns. Use when the user wants to improve a prompt, refine a skill's instructions, review system prompts, audit prompt quality, or debug why an LLM interaction isn't producing optimal results. Also triggers when the user says things like "this prompt isn't working well", "make this prompt better", "review my skill", "why is the output mediocre", or "help me get better results from this". Works on any text that instructs an LLM — prompts, skills, system messages, agent instructions.
+metadata:
+  complements: [prompt-ideator, skill-healthcheck, skill-plan, grammar-checker]
 ---
 
 # Prompt Refiner
