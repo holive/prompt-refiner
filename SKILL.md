@@ -146,7 +146,7 @@ If the user has access to a second model (Gemini, ChatGPT, etc.):
 - The user pastes the response back, and you merge findings
 - Resolve conflicts by **testability**: prefer the critique that leads to a clearer, verifiable instruction that passes the test kit — not merely the most detailed or specific one
 
-For automated cross-model orchestration in Claude Code environments, see `scripts/cross-critique.sh`.
+For automated cross-model orchestration in Claude Code environments, see `cross-critique.sh`.
 
 ---
 
@@ -202,5 +202,5 @@ Note what transfers across examples: the decomposition method and test kit requi
 
 ## References
 
-- `scripts/cross-critique.sh` — Cross-model orchestration for environments with a second CLI model
-- `references/research-sources.md` — Papers and benchmarks backing each technique in this skill
+- `cross-critique.sh` — Cross-model orchestration for environments with a second CLI model
+- `research-sources.md` — Papers and benchmarks backing each technique in this skill
