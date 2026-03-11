@@ -55,13 +55,14 @@ Don't evaluate the prompt as a whole — this triggers the 64.5% blind spot. Dec
 5. **Output format** — Is the expected shape specified? Underspecified format leads to the model's default.
 6. **Failure modes** — What's the simplest wrong answer this allows? What would a lazy interpretation produce?
 7. **Assumptions** — What does this assume about the model's knowledge, context, or capabilities?
+8. **Framing** — Does this prompt assume the problem lives in a specific domain (code, infrastructure, configuration, permissions, data, external service)? If so, what's the simplest explanation from an adjacent domain that this prompt wouldn't catch? If the prompt prescribes investigation or debugging steps, does it verify base assumptions (environment state, permissions, configuration) before deep-diving? Surface only when the prompt involves investigation, debugging, or diagnosis.
 
 ### Skill-Specific Facets (when reviewing SKILL.md or system prompts)
 
-8. **Trigger accuracy** — Does the description cover all cases where this should fire?
-9. **Instruction clarity** — Could a model follow these without the original author's context?
-10. **Progressive disclosure** — Is the body concise with clear pointers to reference files? (Meaning: metadata loads first, then skill body, then bundled references only when needed.)
-11. **Edge case coverage** — What inputs would break the assumptions?
+9. **Trigger accuracy** — Does the description cover all cases where this should fire?
+10. **Instruction clarity** — Could a model follow these without the original author's context?
+11. **Progressive disclosure** — Is the body concise with clear pointers to reference files? (Meaning: metadata loads first, then skill body, then bundled references only when needed.)
+12. **Edge case coverage** — What inputs would break the assumptions?
 
 ### Constraint Conflict Check
 
@@ -95,6 +96,8 @@ Format:
 
 The test kit is mandatory. It's the external grounding anchor that makes this revision testable even without a second model.
 
+For investigation or debugging prompts, the adversarial test case must target a non-primary-domain explanation (environment misconfiguration, missing permissions, wrong data, external service state) that would make the investigation steps unnecessary. The prompt only passes this test if it verifies base assumptions before deep analysis.
+
 After outputting, **stop and ask**: "Want to proceed to Round 2 (Verification), or test this first?"
 
 ---
@@ -107,6 +110,7 @@ Answer these adversarial questions about the revision. The framing is deliberate
 2. **Interpret this prompt as three personas**: a lazy model (does the minimum), an overly literal model (follows the letter, ignores the spirit), and a domain expert model (knows too much, over-optimizes). Do their outputs diverge? Where?
 3. **What implicit knowledge does this prompt rely on?** What would someone need to already know for this to work?
 4. **What's the most plausible mediocre output?** Not absurd failure — the realistic "good enough" result that technically satisfies the prompt but misses the user's actual goal.
+5. **What zero-code or non-primary-domain explanation would make this entire prompt waste time?** If the prompt prescribes investigation steps, does it verify base assumptions (environment state, feature flag configuration, permissions, data integrity) before committing to deep analysis? Skip this question for prompts that aren't investigative or diagnostic in nature.
 
 If any answer reveals a gap, fix it. Update the test kit if the gap suggests a missing test case.
 
