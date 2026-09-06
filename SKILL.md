@@ -1,6 +1,6 @@
 ---
 name: prompt-refiner
-description: Iterative prompt and skill revision using research-backed critique patterns. Use when the user wants to improve a prompt, refine a skill's instructions, review system prompts, audit prompt quality, or debug why an LLM interaction isn't producing optimal results. Also triggers when the user says things like "this prompt isn't working well", "make this prompt better", "review my skill", "why is the output mediocre", or "help me get better results from this". Works on any text that instructs an LLM — prompts, skills, system messages, agent instructions.
+description: "Improve an existing prompt, system message, or skill instruction set using targeted critique and test cases. Use for instruction revisions or diagnosis of prompt failures; use prompt-ideator for new prompts."
 metadata:
   complements: [prompt-ideator, skill-healthcheck, skill-plan, grammar-checker]
 ---
@@ -15,7 +15,14 @@ Iteratively improves prompts, skills, and LLM instructions using critique patter
 
 ## Execution Rules
 
-1. **One round at a time.** Execute only the current round, output the result, and stop. Ask the user before proceeding. Do not simulate future rounds or critique your own revision in the same response.
+1. **One round at a time.** Keep rounds distinct as internal passes and retain
+   their checkpoints. Stop and ask before proceeding only when the user
+   requested interactive pacing or a consequential choice needs input. If the
+   user has authorized complete refinement and no such choice remains, run the
+   rounds needed to reach the Definition of Done without renewed authorization
+   for each round. Return the completed revision with concise verification;
+   expose intermediate checkpoints when useful or when interactive pacing was
+   requested. Do not collapse a round's analysis into the preceding pass.
 2. **Do no harm.** If the original prompt is clear, concise, and lacks obvious failure modes, say so. Do not add complexity to fill facets. A simple prompt that works beats a heavily engineered one that doesn't.
 3. **No leaked implementation details.** Do not include references to scripts, CLIs, orchestration tools, or model names in the revised prompt unless the original already contains them.
 4. **Require evidence, not labels.** Don't name-drop research or methodologies in your output. Demonstrate improvement through concrete before/after changes and test cases. Research references are for this skill's internal guidance, not for the user-facing revision.
@@ -98,7 +105,9 @@ The test kit is mandatory. It's the external grounding anchor that makes this re
 
 For investigation or debugging prompts, the adversarial test case must target a non-primary-domain explanation (environment misconfiguration, missing permissions, wrong data, external service state) that would make the investigation steps unnecessary. The prompt only passes this test if it verifies base assumptions before deep analysis.
 
-After outputting, **stop and ask**: "Want to proceed to Round 2 (Verification), or test this first?"
+After outputting, stop and ask this question in interactive mode or when the
+next step requires a user choice: "Want to proceed to Round 2 (Verification),
+or test this first?" Otherwise proceed to verification.
 
 ---
 
@@ -114,7 +123,9 @@ Answer these adversarial questions about the revision. The framing is deliberate
 
 If any answer reveals a gap, fix it. Update the test kit if the gap suggests a missing test case.
 
-After outputting, **stop and ask**: "Want to proceed to Round 3, or test this?"
+After outputting, stop and ask this question in interactive mode or when the
+next step requires a user choice: "Want to proceed to Round 3, or test this?"
+Otherwise continue when a Round 3 pass is justified.
 
 ---
 
@@ -152,7 +163,9 @@ For automated cross-model orchestration in Claude Code environments, see `cross-
 
 ## What NOT to Do
 
-- **Don't run all rounds in one shot** — stop after each round
+- **Don't collapse rounds into one undifferentiated pass** — preserve the
+  checkpoints, while allowing authorized noninteractive refinement to continue
+  through them.
 - **Don't invent problems** — if the prompt is good, say so
 - **Don't force all facets** — skip those with no gaps
 - **Don't always force a full rewrite** — patches, variants, and critique-only are valid modes
@@ -163,42 +176,7 @@ For automated cross-model orchestration in Claude Code environments, see `cross-
 
 ## Examples: Before and After
 
-### Example 1: Short prompt (light pass)
-
-**Before:**
-```
-Review this code and tell me if there are any issues.
-```
-
-**Round 1 (light pass — Intent + Output format + test case):**
-- **Intent**: "Review" and "issues" are vague. Bugs? Style? Security? Performance?
-- **Output format**: Unspecified → will produce a wall of mixed-priority bullet points.
-
-**After:**
-```
-Review this code for correctness bugs and security issues only. For each issue:
-1. Quote the problematic line(s)
-2. Explain what could go wrong in production
-3. Suggest a fix
-
-If no correctness or security issues exist, say "No issues found."
-```
-
-**Test kit:**
-- Happy path: code with an obvious null pointer → catches it, quotes line, suggests fix
-- Edge case: code that's correct but has style issues → says "No issues found"
-- Adversarial: code with a subtle race condition → identifies it despite complexity
-
-### Example 2: Long skill (sample-based critique)
-
-**Before:** A 200-line SKILL.md with 15 sections.
-
-**Round 1 (sample-based — target weakest sections):**
-- Identified 3 sections with gaps: trigger description too narrow, output format buried at line 180, no edge case handling for empty input.
-- Remaining 12 sections: adequate, no changes.
-- Produced minimal patches for the 3 weak sections only.
-
-Note what transfers across examples: the decomposition method and test kit requirement. What doesn't transfer: the specific facets flagged, the output mode chosen, the level of rewrite.
+Read [the worked example](references/examples.md) when calibrating the method or output. Keep the workflow, test-kit requirements, and stopping conditions above.
 
 ## References
 
